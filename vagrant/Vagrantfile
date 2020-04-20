@@ -1,0 +1,76 @@
+# encoding: utf-8
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Box / OS
+VAGRANT_BOX = "ubuntu/bionic64"
+
+# Leave "2" as it is
+Vagrant.configure("2") do |config|
+  
+  config.vm.define "k3s-master" do |k3s_master|
+        
+    k3s_master.vm.box = VAGRANT_BOX
+    k3s_master.vm.hostname = "k3s-master"
+    k3s_master.vm.network "private_network", ip: "192.168.33.10"
+    k3s_master.vm.network "forwarded_port", guest: 8001, host: 8001
+
+    k3s_master.vm.provider :virtualbox do |vb|
+      vb.name = "k3s-master"
+      vb.customize ["modifyvm", :id, "--memory", "2048"]
+      vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+
+    k3s_master.vm.provision "file", source: "scripts/server_run.sh", destination: "/home/vagrant/server_run.sh"
+
+    k3s_master.vm.provision "shell", inline: 'chmod 755 /home/vagrant/server_run.sh'
+
+    k3s_master.vm.provision "ansible_local" do |ansible|
+      ansible.become = true
+      ansible.limit = "k3s-master,localhost"
+      ansible.verbose = "vvv"
+      ansible.playbook = "ansible/k3s-common.yml"
+    end
+
+    k3s_master.vm.provision "ansible_local" do |ansible|
+      ansible.become = true
+      ansible.limit = "k3s-master,localhost"
+      ansible.verbose = "vvv"
+      ansible.playbook = "ansible/k3s-master.yml"
+    end
+
+  end
+
+  config.vm.define "k3s-node-1" do |k3s_node_1|
+
+    k3s_node_1.vm.box = VAGRANT_BOX
+    k3s_node_1.vm.hostname = "k3s-node-1"
+    k3s_node_1.vm.network "private_network", ip: "192.168.33.20"
+
+    k3s_node_1.vm.provider :virtualbox do |vb|
+      vb.name = "k3s-node-1"
+      vb.customize ["modifyvm", :id, "--memory", "1024"]
+      vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+
+    k3s_node_1.vm.provision "file", source: "scripts/node_run.sh", destination: "/home/vagrant/node_run.sh"
+
+    k3s_node_1.vm.provision "shell", inline: 'chmod 755 /home/vagrant/node_run.sh'
+
+    k3s_node_1.vm.provision "ansible_local" do |ansible|
+      ansible.become = true
+      ansible.limit = "k3s-node-1,localhost"
+      ansible.verbose = "vvv"
+      ansible.playbook = "ansible/k3s-common.yml"
+    end
+
+    k3s_node_1.vm.provision "ansible_local" do |ansible|
+      ansible.become = true
+      ansible.limit = "k3s-node-1,localhost"
+      ansible.verbose = "vvv"
+      ansible.playbook = "ansible/k3s-node.yml"
+    end
+
+  end
+
+end

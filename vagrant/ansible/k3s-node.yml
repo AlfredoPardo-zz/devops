@@ -1,0 +1,32 @@
+---
+- name: k3s Node Specific Configuration
+  hosts: localhost
+  connection: local 
+  gather_facts: no
+  become: yes
+  tasks:
+
+    # - name: Add the K3S_URL variable to /etc/environment
+    #   lineinfile:
+    #     path: /etc/environment
+    #     line: K3S_URL=https://192.168.33.10:6443
+
+    - name: Add the Master Node host resolution to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: 192.168.33.10 k3s-master
+
+    - name: Add the Worker Node host resolution to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: 192.168.33.20 k3s-node-1
+
+    - name: Load Environment Variables
+      shell: ". /etc/environment"
+
+    - name: Install docker.io, apt-transport-https, and curl
+      apt:
+        name: ['docker.io', 'apt-transport-https', 'curl']
+
+    
+    

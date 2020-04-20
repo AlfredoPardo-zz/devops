@@ -1,0 +1,25 @@
+---
+- name: k3s Initial Configuration
+  hosts: localhost
+  connection: local 
+  gather_facts: no
+  become: yes
+  tasks:
+    
+    - name: Add the Worker Node Resolution to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: 192.168.33.20 k3s-node-1
+
+
+    - name: Downloading k3s binary
+      get_url:
+        url: https://github.com/rancher/k3s/releases/download/v1.17.4+k3s1/k3s
+        dest: /usr/local/bin/k3s
+        mode: '0755'
+
+    - name: Downloading kubectl v1.18.2 binary
+      get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/v1.18.2/bin/linux/amd64/kubectl
+        dest: /usr/local/bin/kubectl
+        mode: '0755'
