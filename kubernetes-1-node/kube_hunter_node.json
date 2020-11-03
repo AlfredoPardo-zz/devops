@@ -1,0 +1,1 @@
+{"nodes": [{"type": "Node/Master", "location": "192.168.33.20"}], "services": [{"service": "Kubelet API", "location": "192.168.33.20:10250"}], "vulnerabilities": [], "kburl": "https://aquasecurity.github.io/kube-hunter/kb/{vid}"}

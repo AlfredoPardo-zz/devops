@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dvna-deployment
+  labels:
+    app: dvna
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dvna
+  template:
+    metadata:
+      labels:
+        app: dvna
+    spec:
+      containers:
+      - name: dvna
+        image: appsecco/dvna
+        ports:
+        - containerPort: 9090

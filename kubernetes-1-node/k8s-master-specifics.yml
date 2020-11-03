@@ -1,0 +1,52 @@
+---
+- name: Kubernetes Additional Configuration After Reboot
+  hosts: localhost
+  connection: local 
+  gather_facts: no
+  tasks:
+    
+    - name: Initiate the Kubernetes Cluster
+      become: yes
+      shell: kubeadm init --pod-network-cidr=192.168.0.0/16 --apiserver-advertise-address=192.168.33.10
+      register: configuration_info
+
+    - name: Save configuration info to a file
+      local_action: copy content="{{ configuration_info.stdout }}" dest="/home/vagrant/node_config"
+    
+    - name: Create the standard user's .kube directory
+      file:
+        path: /home/vagrant/.kube
+        state: directory
+        owner: vagrant
+        group: vagrant
+    
+    - name: Copy kubeconfig for vagrant user
+      become: yes
+      copy:
+        remote_src: yes
+        src: /etc/kubernetes/admin.conf
+        dest: /home/vagrant/.kube/config
+        owner: vagrant
+        group: vagrant
+    
+    - name: Deploy a Pod Network as listed on https://kubernetes.io/docs/concepts/cluster-administration/addons/
+      shell: kubectl apply -f https://docs.projectcalico.org/v3.11/manifests/calico.yaml
+   
+    - name: Create a Service Account for the Dashboard
+      shell: kubectl create serviceaccount dashboard -n default
+    
+    - name: Add Cluster Binding Rules for Dashboard Roles 
+      shell: kubectl create clusterrolebinding dashboard-admin -n default --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard
+
+    - name: Secret Token for the Dashboard
+      shell: kubectl get secret $(kubectl get serviceaccount dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 --decode
+      register: dashboard_info
+
+    - name: Save dashboard info to a file
+      local_action: copy content="{{ dashboard_info.stdout }}" dest="/home/vagrant/dashboard_info"
+        
+    - name: Enable Kubernetes Proxy
+      shell: nohup kubectl proxy --address='0.0.0.0' --port=8001 --accept-hosts='.*' & 
+
+    - name: Create Kubernetes Dashboard
+      shell: kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/alternative/kubernetes-dashboard.yaml

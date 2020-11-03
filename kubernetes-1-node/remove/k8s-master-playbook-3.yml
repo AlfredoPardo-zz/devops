@@ -1,0 +1,11 @@
+---
+- name: Kubernetes Additional Configuration As Regular User
+  hosts: localhost
+  connection: local 
+  gather_facts: no
+  tasks:
+    - name: Enable Kubernetes Proxy
+      shell: kubectl proxy &
+
+
+        

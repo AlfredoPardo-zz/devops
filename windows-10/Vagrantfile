@@ -1,0 +1,29 @@
+# encoding: utf-8
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Box / OS
+VAGRANT_BOX = "StefanScherer/windows_10"
+
+# Leave "2" as it is
+Vagrant.configure("2") do |config|
+  
+  config.vm.define "windows-10-test" do |windows_10_test|
+        
+    windows_10_test.vm.box = VAGRANT_BOX
+    windows_10_test.vm.hostname = "windows-10-test"
+    windows_10_test.vm.network "private_network", ip: "192.168.33.51"
+
+    windows_10_test.vm.provider :virtualbox do |vb|
+      vb.name = "windows-10-test"
+      vb.customize ["modifyvm", :id, "--memory", "4096"]
+      vb.customize ["modifyvm", :id, "--cpus", "2"]
+      vb.customize ["storageattach", :id, 
+                "--storagectl", "IDE Controller", 
+                "--port", "0", "--device", "1", 
+                "--type", "dvddrive", 
+                "--medium", "emptydrive"]
+    end
+
+  end
+end

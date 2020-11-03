@@ -1,0 +1,26 @@
+# encoding: utf-8
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Box / OS
+VAGRANT_BOX = "ubuntu/bionic64"
+
+# Leave "2" as it is
+Vagrant.configure("2") do |config|
+  
+  config.vm.define "ubuntu-18" do |ubuntu_18|
+        
+    ubuntu_18.vm.box = VAGRANT_BOX
+    ubuntu_18.vm.hostname = "ubuntu-18"
+    ubuntu_18.vm.network "private_network", ip: "192.168.33.50"
+    ubuntu_18.vm.network "forwarded_port", guest: 8001, host: 8001
+
+    ubuntu_18.vm.provider :virtualbox do |vb|
+      vb.name = "ubuntu-18"
+      vb.customize ["modifyvm", :id, "--memory", "2048"]
+      vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+
+  end
+
+end

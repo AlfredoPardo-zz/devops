@@ -1,0 +1,39 @@
+{
+	"nodes": [{
+		"type": "Node/Master",
+		"location": "192.168.33.10"
+	}],
+	"services": [{
+		"service": "Etcd",
+		"location": "192.168.33.10:2379"
+	}, {
+		"service": "Kubernetes Proxy",
+		"location": "192.168.33.10:8001"
+	}, {
+		"service": "Kubelet API",
+		"location": "192.168.33.10:10250"
+	}, {
+		"service": "API Server",
+		"location": "192.168.33.10:6443"
+	}],
+	"vulnerabilities": [{
+		"location": "192.168.33.10:8001",
+		"vid": "KHV049",
+		"category": "Information Disclosure",
+		"severity": "medium",
+		"vulnerability": "Proxy Exposed",
+		"description": "All operations on the cluster are exposed",
+		"evidence": "",
+		"hunter": "Proxy Hunting"
+	}, {
+		"location": "192.168.33.10:6443",
+		"vid": "KHV002",
+		"category": "Information Disclosure",
+		"severity": "medium",
+		"vulnerability": "K8s Version Disclosure",
+		"description": "The kubernetes version could be obtained from the /version endpoint ",
+		"evidence": "v1.18.2",
+		"hunter": "Api Version Hunter"
+	}],
+	"kburl": "https://aquasecurity.github.io/kube-hunter/kb/{vid}"
+}

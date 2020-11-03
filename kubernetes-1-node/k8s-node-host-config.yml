@@ -1,0 +1,15 @@
+---
+- name: Kubernetes Master Host - Linux Configuration
+  hosts: localhost
+  connection: local 
+  gather_facts: no
+  become: yes
+  tasks:
+    
+    - name: Add the Worker Node Resolution to /etc/hosts
+      blockinfile:
+        path: /etc/hosts
+        state: present
+        block: |
+          192.168.33.10 k8s-master
+          192.168.33.20 k8s-node-1

@@ -48,7 +48,11 @@
 
 > **your-host**$ kubectl get nodes
 
-4. Create a Deployment (from the examples folder)
+4. Create a Deployment 
+
+> **your-host**$ kubectl create deployment nginx --image nginx
+
+OR (from the examples folder)
 
 > **your-host**$ kubectl apply -f examples/nginx-deployment.yaml
 
@@ -57,6 +61,11 @@
 > **your-host**$ kubectl get pods
 
 6. Delete the Deployment 
+
+**your-host**$ $ kubectl delete deploy/nginx
+
+OR (from the examples folder)
+
 > **your-host**$ $ kubectl delete deploy/nginx-deployment
 
 ## Shutdown the environment

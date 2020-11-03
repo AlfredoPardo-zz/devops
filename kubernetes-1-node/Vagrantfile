@@ -1,0 +1,80 @@
+# encoding: utf-8
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Box / OS
+VAGRANT_BOX = "ubuntu/bionic64"
+
+Vagrant.configure("2") do |config|
+  
+  config.vm.define "k8s-master" do |k8s_master|
+        
+    k8s_master.vm.box = VAGRANT_BOX
+    k8s_master.vm.hostname = "k8s-master"
+    k8s_master.vm.network "private_network", ip: "192.168.33.10"
+    k8s_master.vm.network "forwarded_port", guest: 8001, host: 8001
+
+    k8s_master.vm.provider :virtualbox do |vb|
+      vb.name = "k8s-master"
+      vb.customize ["modifyvm", :id, "--memory", "2048"]
+      vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+    
+    k8s_master.vm.provision "ansible_local" do |ansible|
+      ansible.become = true
+      ansible.limit = "k8s-master,localhost"
+      ansible.verbose = "vvv"
+      ansible.playbook = "k8s-master-host-config.yml"
+    end
+
+    k8s_master.vm.provision "ansible_local" do |ansible|
+      ansible.become = true
+      ansible.limit = "k8s-master,localhost"
+      ansible.verbose = "vvv"
+      ansible.playbook = "k8s-common.yml"
+    end
+
+    k8s_master.vm.provision :reload
+
+    k8s_master.vm.provision "ansible_local" do |ansible|
+      ansible.limit = "k8s-master,localhost"
+      ansible.verbose = "vvv"
+      ansible.playbook = "k8s-master-specifics.yml"
+    end
+  
+  end
+
+  config.vm.define "k8s-node-1" do |k8s_node_1|
+
+    k8s_node_1.vm.box = VAGRANT_BOX
+    k8s_node_1.vm.hostname = "k8s-node-1"
+    k8s_node_1.vm.network "private_network", ip: "192.168.33.20"
+
+    k8s_node_1.vm.provider :virtualbox do |vb|
+      vb.name = "k8s-node-1"
+      vb.customize ["modifyvm", :id, "--memory", "1024"]
+      vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+
+    k8s_node_1.vm.provision "ansible_local" do |ansible|
+      ansible.become = true
+      ansible.limit = "k8s-node-1,localhost"
+      ansible.verbose = "vvv"
+      ansible.playbook = "k8s-node-host-config.yml"
+    end   
+
+    k8s_node_1.vm.provision "ansible_local" do |ansible|
+      ansible.become = true
+      ansible.limit = "k8s-node-1,localhost"
+      ansible.verbose = "vvv"
+      ansible.playbook = "k8s-common.yml"
+    end
+
+    k8s_node_1.vm.provision :reload
+
+  end
+   
+end
+
+
+  

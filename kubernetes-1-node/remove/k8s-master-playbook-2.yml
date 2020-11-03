@@ -1,0 +1,42 @@
+---
+- name: Kubernetes Additional Configuration After Reboot
+  hosts: localhost
+  connection: local 
+  gather_facts: no
+  
+  tasks:
+    
+    - name: Initiate the Kubernetes Cluster
+      become: yes
+      shell: kubeadm init --pod-network-cidr=192.168.0.0/16 --apiserver-advertise-address=192.168.33.10
+    
+    - name: Create the standard user's .kube directory
+      file:
+        path: /home/vagrant/.kube
+        state: directory
+        owner: vagrant
+        group: vagrant
+    
+    - name: Copy kubeconfig for vagrant user
+      become: yes
+      copy:
+        remote_src: yes
+        src: /etc/kubernetes/admin.conf
+        dest: /home/vagrant/.kube/config
+        owner: vagrant
+        group: vagrant
+        
+    - name: Enable Kubernetes Proxy
+      shell: kubectl proxy &
+
+    - name: Deploy a Pod Network as listed on https://kubernetes.io/docs/concepts/cluster-administration/addons/
+      shell: kubectl apply -f https://docs.projectcalico.org/v3.11/manifests/calico.yaml
+
+    - name: Create the Dashboard
+      shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-rc1/aio/deploy/recommended.yaml
+
+    - name: Create a Service Account for the Dashboard
+      shell: kubectl create serviceaccount dashboard -n default
+
+    - name: Add Cluster Binding Rules for Dashboard Roles 
+      shell: kubectl create clusterrolebinding dashboard-admin -n default --clusterrole=cluster-admin --serviceaccount=default:dashboard
